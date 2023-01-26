@@ -1,58 +1,74 @@
-from database import db
+import uuid
+from database import db_session
 from flask import request, Blueprint
 from models.production_model import Production
+from models.user_model import User
 from services.metrics import Metrics
 
 production_blueprint = Blueprint('production_blueprint',__name__)
 
 @production_blueprint.route("/production", methods=["GET"])
 def production_list():
-    productions = db.session.execute(db.select(Production).order_by(Production.name)).scalars()
-    return productions
+    productions = Production.query.all()
+    response = []
+    for production in productions:
+        response.append({'id': production.id, 'title':production.title, "text":production.text, 'user_id': production.user_id})
+    return response
 
 @production_blueprint.route("/production/<string:id>", methods=["GET"])
 def production_detail(id):
-    production = db.get_or_404(Production, id)
-    return production
+    production = Production.query.filter(Production.id == id).first()
+    if production:
+        response = {'id': production.id, 'text': production.text, 'user_id':production.user_id}
+        return response
+    return {"message":"Production not found"}, 404
     
 @production_blueprint.route("/production", methods=["POST"])
 def production_create():
-    production = Production(
-        text=request.form["text"],
-        user_id=request.form["user_id"],
-    )
-    db.session.add(production)
-    db.session.commit()
-    return production
+    user = User.query.filter(User.id == request.form["user_id"]).first()
+    if user:
+        production = Production(
+            id = uuid.uuid4(),
+            title=request.form["title"],
+            text=request.form["text"],
+            user_id=request.form["user_id"],
+        )
+        db_session.add(production)
+        db_session.commit()
+        response = {'id': production.id, 'title':production.title, "text":production.text, 'user_id': production.user_id}
+        return response
+    return {"message":"User not found"}, 404
 
 @production_blueprint.route("/production/<string:id>", methods=["PUT"])
 def production_update(id):
-    production = db.get_or_404(Production, id)
+    production = Production.query.filter(Production.id == id).first()
+    if production:
+        db_session.delete(production)
+        db_session.commit()
 
-    db.session.delete(production)
-    db.session.commit()
-
-    new_production = Production(
-        id= id,
-        text=request.form["text"],
-        user_id=request.form["user_id"],
-    )
-    db.session.add(new_production)
-    db.session.commit()
-    return new_production
+        new_production = Production(
+            id= id,
+            title=request.form["title"],
+            text=request.form["text"],
+            user_id=request.form["user_id"],
+        )
+        db_session.add(new_production)
+        db_session.commit()
+        response = {'id': new_production.id, 'title':new_production.title, "text":new_production.text, 'user_id': new_production.user_id}
+        return response
+    else:
+        return {"message":"Production not found"}, 404
 
 @production_blueprint.route("/production/<string:id>", methods=["DELETE"])
 def production_delete(id):
-    production = db.get_or_404(Production, id)
-    db.session.delete(production)
-    db.session.commit()
-    return "Done!"
+    production = Production.query.filter(Production.id == id).first()
+    db_session.delete(production)
+    db_session.commit()
+    return {"message":"Production Deleted!"}
 
 @production_blueprint.route("/production/analyze", methods=["POST"])
 def production_analyze():
     text = request.form["text"]
-    # density_method = request.form["density_method"]
-    # diversity_method = request.form["diversity_method"]
     metric = Metrics(text)
     subs, verbs, adj, adv = metric.countLexicalItems()
     pro, art, others = metric.countNonLexicalItems()

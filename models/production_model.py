@@ -1,9 +1,11 @@
-from database import db
+from database import Base
+from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 import uuid
-class Production(db.Model):
+class Production(Base):
     __tablename__ = 'productions'
-    id = db.Column(db.String, name="uuid", primary_key=True, default=uuid.uuid4())
-    title = db.Column(db.String, nullable=False)
-    text = db.Column(db.String, nullable=False)
+    id = Column(UUID(as_uuid=True), name="uuid", primary_key=True, default=uuid.uuid4)
+    title = Column(String, nullable=False)
+    text = Column(String, nullable=False)
     
-    user_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
