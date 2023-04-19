@@ -18,11 +18,13 @@ class Metrics():
 
   # Use python's method Counter() to get the word frequency.
   def wordFrequency(self, text):
-    text = text.replace(".",'')
-    text = text.replace(",",'')
-    text = text.replace(":",'')
-    text = text.replace("-",'')
+    # Select only the alphanumerics
+    text = re.sub(r'[^\w\d\s]', ' ', text)
+    
+    # Convert the text to lowercase
     text = text.lower()
+
+    # Separate words in an array
     result = re.split("[^\w]+", text)
     
     if (result[-1] == ''):
