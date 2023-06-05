@@ -1,2 +1,3 @@
 from controllers.user_controller import user_blueprint
 from controllers.production_controller import production_blueprint
+from controllers.collection_controller import collection_blueprint
