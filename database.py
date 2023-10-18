@@ -16,7 +16,7 @@ Base = declarative_base()
 Base.query = db_session.query_property()
 
 def init_db():
-    import models.__all_models
+    import models.__all__models
     print("Creating Tables")
     Base.metadata.create_all(bind=engine)
     print("Tables created successfully...")
