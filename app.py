@@ -5,7 +5,10 @@ from controllers.user_controller import user_blueprint
 from controllers.production_controller import production_blueprint
 from controllers.collection_controller import collection_blueprint
 
-nltk.download('punkt')
+nltk.data.path.append(os.path.join(os.path.dirname(__file__), 'nltk_data'))
+
+if not os.path.exists(os.path.join(os.path.dirname(__file__), 'nltk_data/tokenizers/punkt')):
+    nltk.download('punkt', download_dir='nltk_data')
 
 app = Flask(__name__)
 app.register_blueprint(user_blueprint)
