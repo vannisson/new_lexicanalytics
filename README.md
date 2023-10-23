@@ -43,7 +43,7 @@ To start using Lexicanalytics, follow these simple steps:
    - On Linux:
 
     ```shell
-    $ source venv/bin/activate
+    $ source venv/Scripts/activate
     ```
 
 4. **Install Dependencies**: With the virtual environment active, install project dependencies using pip.
