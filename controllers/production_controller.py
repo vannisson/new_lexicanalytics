@@ -36,6 +36,9 @@ def production_create():
             title = request.form.get("title")
             text = request.form.get("text")
             
+            if title != "":
+                text = title + "\n" + text
+            
             metric = Metrics(text)
             subs, verbs, adj, adv = metric.countLexicalItems()
             pro, art, others = metric.countNonLexicalItems()
