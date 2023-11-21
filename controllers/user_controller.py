@@ -14,7 +14,11 @@ def auth_user():
         user = User.query.filter(User.email == email).first()
         if user:
             if check_password_hash(user.password, password):
-                return jsonify({"message": "Authenticated"})
+                response = {
+                'user': user.to_dict(),
+                #'token': 
+                }
+                return jsonify(response)
             else:
                 return jsonify({"message": "Passwords do not match"})
         else:
