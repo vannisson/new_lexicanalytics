@@ -3,6 +3,7 @@ from models.__all__models import Production, Collection, User
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import db_session
 import uuid
+from helper import auth, token_required
 
 user_blueprint = Blueprint('user_blueprint', __name__)
 
@@ -21,6 +22,8 @@ def auth_user():
             return jsonify({"message": "User not found"}), 404
     except Exception as e:
         return jsonify({"message": str(e)}), 500
+    
+    return helper.auth()
 
 
 @user_blueprint.route("/user", methods=["GET"])
@@ -121,3 +124,19 @@ def user_delete(id):
             return jsonify({"message": "User not found"}), 404
     except Exception as e:
         return jsonify({"message": str(e)}), 500
+
+
+#       nico      #
+
+def user_by_username(username):
+    try:
+        return User.query.filter( User.username == username ).one()
+
+    except:
+        return None
+    
+
+@user_blueprint.route("/", methods=['GET'])
+@helper.token_required
+def root(current_user):
+    return jsonify({'message:' f'Seja bem vindo, {current_user.name}'})
