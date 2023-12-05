@@ -61,9 +61,6 @@ def user_create():
         name = request.form.get("name")
         email = request.form.get("email")
         password = request.form.get("password")
-        city = request.form.get("city")
-        state = request.form.get("state")
-        country = request.form.get("country")
         user_exists = User.query.filter(User.email == email).first()
         if user_exists:
             return jsonify({"message": "User already exists"}), 409
@@ -73,9 +70,7 @@ def user_create():
                 name=name,
                 email=email,
                 password=generate_password_hash(password),
-                city=city,
-                state=state,
-                country=country
+
             )
             db_session.add(user)
             db_session.commit()
@@ -92,17 +87,10 @@ def user_update(id):
             name = request.form.get("name")
             email = request.form.get("email")
             password = request.form.get("password")
-            city = request.form.get("city")
-            state = request.form.get("state")
-            country = request.form.get("country")
 
             user.name = name
             user.email = email
             user.password = generate_password_hash(password)
-            user.city = city
-            user.state = state
-            user.country = country
-
             db_session.commit()
 
             return jsonify(user.to_dict())
