@@ -12,9 +12,6 @@ class User(Base):
     name = Column(String, nullable=False)
     email = Column(String, nullable=False)  
     password = Column(String, nullable=False)
-    city = Column(String, nullable=False)
-    state = Column(String, nullable=False)
-    country = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     collections = relationship(
@@ -25,8 +22,6 @@ class User(Base):
             "id": str(self.id),
             "name": self.name,
             "email": self.email,
-            "city": self.city,
-            "state": self.state,
-            "country": self.country,
+            "password": self.password,
             "created_at": self.created_at.strftime("%d/%m/%Y %H:%M:%S")
         }

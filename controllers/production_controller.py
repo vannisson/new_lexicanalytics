@@ -36,41 +36,11 @@ def production_create():
             title = request.form.get("title")
             text = request.form.get("text")
             
-            if title != "":
-                text = title + "\n" + text
-            
-            metric = Metrics(text)
-            subs, verbs, adj, adv = metric.countLexicalItems()
-            pro, art, others = metric.countNonLexicalItems()
-            lexical_items = {"subs": subs, "verbs": verbs, "adj": adj, "adv": adv}
-            non_lexical_items = {"pro": pro, "art": art, "others": others}
-            
             production = Production(
                             id = uuid.uuid4(),
                             title = title,
                             text = text,
-                            n_lines = metric.numberOfLines(),
-                            n_tokens = metric.numberOfTokens(),
-                            n_types = metric.numberOfTypes(),
-                            ure_density = metric.calculateUre(),
-                            halliday_density = metric.calculateHalliday(),
-                            ttr_diversity = metric.calculateTTR(),
-                            rttr_diversity = metric.calculateRTTR(),
-                            cttr_diversity = metric.calculateCTTR(),
-                            msttr_diversity = metric.calculateMSTTR(),
-                            mattr_diversity = metric.calculateMATTR(),
-                            mtld_diversity = metric.calculateMTLD(),
-                            hdd_diversity = metric.calculateHDD(),
-                            vocd_diversity = metric.calculateVOCD(),
-                            herdan_diversity = metric.calculateHerdan(),
-                            summer_diversity = metric.calculateSummer(),
-                            dugast_diversity = metric.calculateDugast(),
-                            maas_diversity = metric.calculateMaas(),
-                            word_frequency = metric.wordFrequency(text),
-                            word_tagged = metric.tagger_words,
-                            lexical_items = lexical_items,
-                            non_lexical_items = non_lexical_items,
-                            collection = collection
+                            collection_id = collection_id
                         )
 
             db_session.add(production)
@@ -88,33 +58,9 @@ def production_update(id):
         if production:
             title = request.form.get("title")
             text = request.form.get("text")
-            metric = Metrics(text)
-            subs, verbs, adj, adv = metric.countLexicalItems()
-            pro, art, others = metric.countNonLexicalItems()
             
             production.title = title
             production.text = text
-            production.n_lines = metric.numberOfLines(),
-            production.n_tokens = metric.numberOfTokens(),
-            production.n_types = metric.numberOfTypes(),
-            production.ure_density = metric.calculateUre(),
-            production.halliday_density = metric.calculateHalliday(),
-            production.ttr_diversity = metric.calculateTTR(),
-            production.rttr_diversity = metric.calculateRTTR(),
-            production.cttr_diversity = metric.calculateCTTR(),
-            production.msttr_diversity = metric.calculateMSTTR(),
-            production.mattr_diversity = metric.calculateMATTR(),
-            production.mtld_diversity = metric.calculateMTLD(),
-            production.hdd_diversity = metric.calculateHDD(),
-            production.vocd_diversity = metric.calculateVOCD(),
-            production.herdan_diversity = metric.calculateHerdan(),
-            production.summer_diversity = metric.calculateSummer(),
-            production.dugast_diversity = metric.calculateDugast(),
-            production.maas_diversity = metric.calculateMaas(),
-            production.word_frequency = metric.wordFrequency(text),
-            production.word_tagged = metric.tagger_words,
-            production.lexical_items = {"subs": subs, "verbs": verbs, "adj": adj, "adv": adv}
-            production.non_lexical_items = {"pro": pro, "art": art, "others": others}
 
             db_session.commit()
 

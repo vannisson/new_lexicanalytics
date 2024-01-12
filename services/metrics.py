@@ -1,6 +1,6 @@
-import re
 from joblib import load
 import nltk
+import math
 from collections import Counter
 from lexicalrichness import LexicalRichness
 
@@ -11,26 +11,22 @@ from lexicalrichness import LexicalRichness
 class Metrics():
 
     def __init__(self, text):
-        self.text = text
-        self.lex = LexicalRichness(text.replace("\n", " "))
+        # Converte o texto para minúsculas e remove espaços em branco no início e no final
+        self.text = text.lower().strip()
+        
+        # Inicializa a análise de riqueza lexical
+        self.lex = LexicalRichness(self.text)
+        
+        # Carrega o POS tagger
         self.pos_tagger = load("./services/tagger/POS_tagger_brill.pkl")
-        self.tagger_words = dict(self.pos_tagger.tag(
-            nltk.word_tokenize(self.text.lower())))
+        
+        # Aplica o POS tagging ao texto
+        self.tokens = nltk.word_tokenize(self.text)
+        self.tagged_words = dict(self.pos_tagger.tag(self.tokens))
 
     # Use python's method Counter() to get the word frequency.
-    def wordFrequency(self, text):
-        # Select only the alphanumerics
-        text = re.sub(r'[^\w\d\s]', ' ', text)
-
-        # Convert the text to lowercase
-        text = text.lower()
-
-        # Separate words in an array
-        result = re.split("[^\w]+", text)
-
-        if (result[-1] == ''):
-            result.pop()
-        return Counter(result)
+    def wordFrequency(self):
+        return Counter(self.tokens)
 
     # Counts the number of tokens.
     def numberOfTokens(self):
@@ -62,8 +58,8 @@ class Metrics():
 
         return lexitems*100/tokens
 
-    # Calculates the lexical density value based on Halliday's method.
-    def calculateHalliday(self):
+    # Calculates the lexical density value based on NewUre's method (Using now ADV).
+    def calculateNewUre(self):
         pos = self.pos_tagger.tag(nltk.word_tokenize(self.text))
         lexitems = 0
 
@@ -75,22 +71,26 @@ class Metrics():
 
         tokens = self.numberOfTokens()
 
-        return lexitems*100/tokens
+        return lexitems/tokens
 
-    # Counts the occurrences of each of the lexical items extracted from the text
+    # Counts the occurrences of each of the lexical tokens extracted from the text
     # pos_dict = Pos-Tagger Object
     # freq_dict = wordFrequency() Object
-    def countLexicalItems(self):
-        pos_dict = dict(self.pos_tagger.tag(
-            nltk.word_tokenize(self.text.lower())))
-        freq_dict = self.wordFrequency(self.text)
+    def countPOSTokens(self):
+        pos_dict = dict(self.pos_tagger.tag(self.tokens))
+        freq_dict = self.wordFrequency()
 
         pos_subs = 0
         pos_verbs = 0
         pos_adj = 0
         pos_adv = 0
+        
+        pos_pro = 0
+        pos_art = 0
+        pos_others = 0
 
         for wd in freq_dict:
+            # Lexical Items
             if (pos_dict[wd] == 'N' or pos_dict[wd] == 'NPROP'):
                 pos_subs += freq_dict[wd]
             elif (pos_dict[wd] == 'V' or pos_dict[wd] == 'VAUX'):
@@ -99,32 +99,54 @@ class Metrics():
                 pos_adj += freq_dict[wd]
             elif (pos_dict[wd] == 'ADV' or pos_dict[wd] == 'ADV-KS' or pos_dict[wd] == 'ADV-KS-REL'):
                 pos_adv += freq_dict[wd]
+            
+            # Non-Lexical Items
+            elif (pos_dict[wd] == 'PROADJ' or pos_dict[wd] == 'PROPESS' or pos_dict[wd] == 'PROSUB' or pos_dict[wd] == 'PRO-KS' or pos_dict[wd] == 'PRO-KS-REL'):
+                    pos_pro += freq_dict[wd]
+            elif (pos_dict[wd] == 'ART'):
+                pos_art += freq_dict[wd]
+            else:
+                pos_others += freq_dict[wd]
 
-        return pos_subs, pos_verbs, pos_adj, pos_adv
+        return [pos_subs, pos_verbs, pos_adj, pos_adv, pos_pro, pos_art, pos_others]
 
-    # Counts the occurrences of each of the non-lexical items extracted from the text
+    # Counts the occurrences of each of the lexical types extracted from the text
     # pos_dict = Pos-Tagger Object
     # freq_dict = wordFrequency() Object
-    def countNonLexicalItems(self):
-        pos_dict = dict(self.pos_tagger.tag(
-            nltk.word_tokenize(self.text.lower())))
-        freq_dict = self.wordFrequency(self.text)
+    def countPOSTypes(self):
+        pos_dict = dict(self.pos_tagger.tag(self.tokens))
+        freq_dict = self.wordFrequency()
 
+        pos_subs = 0
+        pos_verbs = 0
+        pos_adj = 0
+        pos_adv = 0
+        
         pos_pro = 0
         pos_art = 0
         pos_others = 0
 
         for wd in freq_dict:
-            if (pos_dict[wd] != 'N' and pos_dict[wd] != 'NPROP' and pos_dict[wd] != 'V' and pos_dict[wd] != 'VAUX' and pos_dict[wd] != 'ADJ' and pos_dict[wd] != 'ADV' and pos_dict[wd] != 'ADV-KS' and pos_dict[wd] != 'ADV-KS-REL'):
-                if (pos_dict[wd] == 'PROADJ' or pos_dict[wd] == 'PROPESS' or pos_dict[wd] == 'PROSUB' or pos_dict[wd] == 'PRO-KS' or pos_dict[wd] == 'PRO-KS-REL'):
+            # Lexical Items
+            if (pos_dict[wd] == 'N' or pos_dict[wd] == 'NPROP'):
+                pos_subs += 1
+            elif (pos_dict[wd] == 'V' or pos_dict[wd] == 'VAUX'):
+                pos_verbs += 1
+            elif (pos_dict[wd] == 'ADJ'):
+                pos_adj += 1
+            elif (pos_dict[wd] == 'ADV' or pos_dict[wd] == 'ADV-KS' or pos_dict[wd] == 'ADV-KS-REL'):
+                pos_adv += 1
+            
+            # Non-Lexical Items
+            elif (pos_dict[wd] == 'PROADJ' or pos_dict[wd] == 'PROPESS' or pos_dict[wd] == 'PROSUB' or pos_dict[wd] == 'PRO-KS' or pos_dict[wd] == 'PRO-KS-REL'):
                     pos_pro += freq_dict[wd]
-                elif (pos_dict[wd] == 'ART'):
-                    pos_art += freq_dict[wd]
-                else:
-                    pos_others += freq_dict[wd]
-        print("done:", pos_pro, pos_art, pos_others)
-        return pos_pro, pos_art, pos_others
+            elif (pos_dict[wd] == 'ART'):
+                pos_art += freq_dict[wd]
+            else:
+                pos_others += freq_dict[wd]
 
+        return [pos_subs, pos_verbs, pos_adj, pos_adv, pos_pro, pos_art, pos_others]
+    
     # Calculates the lexical diversity value based on TTR's method.
     def calculateTTR(self):
         return self.lex.ttr
@@ -172,3 +194,8 @@ class Metrics():
     # Calculates the lexical diversity value based on Maas's method.
     def calculateMaas(self):
         return self.lex.Maas
+    
+    def calculateRichness(self):
+        density = self.calculateUre()
+        diversity = self.calculateHDD()
+        return math.sqrt((diversity)**2 + density**2)
