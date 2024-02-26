@@ -172,8 +172,8 @@ class Metrics():
         return self.lex.mtld(threshold=0.72)
 
     # Calculates the lexical diversity value based on HDD's method.
-    def calculateHDD(self):
-        return self.lex.hdd(draws=42)
+    def calculateHDD(self, draws):
+        return self.lex.hdd(draws)
 
     # Calculates the lexical diversity value based on VOCD's method.
     def calculateVOCD(self):
@@ -195,7 +195,5 @@ class Metrics():
     def calculateMaas(self):
         return self.lex.Maas
     
-    def calculateRichness(self):
-        density = self.calculateUre()
-        diversity = self.calculateHDD()
+    def calculateRichness(self, density, diversity):
         return math.sqrt((diversity)**2 + density**2)

@@ -106,11 +106,24 @@ def calculateMetricsFromProductions(productions):
     single_productions = defaultdict(list)
     tokens_statistics = defaultdict(list)
     types_statistics = defaultdict(list)
+    draws = 42
+    
+    for production in productions:
+        metric = Metrics(production.text)
+        if metric.numberOfTokens() < draws:
+            draws = metric.numberOfTokens() // 2
 
     for production in productions:
         metric = Metrics(production.text)
         POSTokens = metric.countPOSTokens()
         POSTypes = metric.countPOSTypes()
+        
+        n_lines = metric.numberOfLines()
+        n_tokens = metric.numberOfTokens()
+        n_types = metric.numberOfTypes()
+        diversity = metric.calculateHDD(draws)
+        density = metric.calculateNewUre()
+        richness = metric.calculateRichness(density, diversity)
 
         tokens_count = {label: count for label, count in zip(["subs", "verb", "adj", "adv", "pro", "art", "others"], POSTokens)}
         types_count = {label: count for label, count in zip(["subs", "verb", "adj", "adv", "pro", "art", "others"], POSTypes)}
@@ -121,22 +134,22 @@ def calculateMetricsFromProductions(productions):
         for label, count in types_count.items():
             types_statistics[label].append(count)
 
-        all_productions["n_lines"].append(metric.numberOfLines())
-        all_productions["n_tokens"].append(metric.numberOfTokens())
-        all_productions["n_types"].append(metric.numberOfTypes())
-        all_productions["density"].append(metric.calculateNewUre())
-        all_productions["diversity"].append(metric.calculateHDD())
-        all_productions["richness"].append(metric.calculateRichness())
+        all_productions["n_lines"].append(n_lines)
+        all_productions["n_tokens"].append(n_tokens)
+        all_productions["n_types"].append(n_types)
+        all_productions["density"].append(density)
+        all_productions["diversity"].append(diversity)
+        all_productions["richness"].append(richness)
         
         single_productions["title"].append(production.title)
         single_productions["text"].append(production.text)
         single_productions["tagged_words"].append(metric.tagged_words)
-        single_productions["n_lines"].append(metric.numberOfLines())
-        single_productions["n_tokens"].append(metric.numberOfTokens())
-        single_productions["n_types"].append(metric.numberOfTypes())
-        single_productions["density"].append(metric.calculateNewUre())
-        single_productions["diversity"].append(metric.calculateHDD())
-        single_productions["richness"].append(metric.calculateRichness())
+        single_productions["n_lines"].append(n_lines)
+        single_productions["n_tokens"].append(n_tokens)
+        single_productions["n_types"].append(n_types)
+        single_productions["density"].append(density)
+        single_productions["diversity"].append(diversity)
+        single_productions["richness"].append(richness)
         single_productions["tokens_count"].append(tokens_count)
         single_productions["types_count"].append(types_count)
 
